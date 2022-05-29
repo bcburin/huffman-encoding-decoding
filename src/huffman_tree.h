@@ -30,7 +30,7 @@ class huffman_tree: public binary_tree<identified_char<char_t>> {
     huffman_tree<char_t>* right() { return static_cast<huffman_tree<char_t>*>(binary_tree<identified_char<char_t>>::right_); }
     static int id_;
   public:
-    huffman_tree(char_t ch, int frequency = 0);
+    huffman_tree(char_t ch = 0, int frequency = 0);
     int frequency() const { return frequency_; }
     char_t ch() const { return binary_tree<identified_char<char_t>>::data_.ch; }
     bitstream encode(std::basic_string<char_t> str);
