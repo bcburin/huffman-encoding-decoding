@@ -13,7 +13,8 @@ template <typename char_t>
 struct identified_char {
   char_t ch;
   int id;
-  identified_char(char_t ch);
+  identified_char(char_t ch = 0);
+  bool operator== (const identified_char<char_t>& other) const { return id == other.id; }
   private:
     static int id_;
 };
@@ -23,7 +24,6 @@ template <typename char_t>
 class huffman_tree: public binary_tree<identified_char<char_t>> {
   private:
     int frequency_;
-    char_t char_;
     std::unordered_map<char_t, bitstream> codes_;
     void generate_codes_util(std::unordered_map<char_t, bitstream>& codes, bitstream& code);
     huffman_tree<char_t>* left() { return static_cast<huffman_tree<char_t>*>(binary_tree<identified_char<char_t>>::left_); }
@@ -32,6 +32,7 @@ class huffman_tree: public binary_tree<identified_char<char_t>> {
   public:
     huffman_tree(char_t ch, int frequency = 0);
     int frequency() const { return frequency_; }
+    char_t ch() const { return binary_tree<identified_char<char_t>>::data_.ch; }
     bitstream encode(std::basic_string<char_t> str);
     std::basic_string<char_t> decode(bitstream& coded);
     struct greater { bool operator() (const huffman_tree<char_t>*, const  huffman_tree<char_t>*); };
@@ -54,7 +55,7 @@ bool huffman_tree<char_t>::greater::operator() (const huffman_tree<char_t>* ch1,
 
 template <typename char_t>
 huffman_tree<char_t>::huffman_tree(char_t ch, int frequency)
-: binary_tree<identified_char<char_t>>(identified_char<char_t>(ch)), char_(ch), frequency_(frequency) {}
+: binary_tree<identified_char<char_t>>(identified_char<char_t>(ch)), frequency_(frequency) {}
 
 
 template <typename char_t>
@@ -90,7 +91,7 @@ huffman_tree<char_t>* huffman_tree<char_t>::from_frequencies(std::unordered_map<
 template <typename char_t>
 void huffman_tree<char_t>::generate_codes_util(std::unordered_map<char_t, bitstream>& codes, bitstream& code) {
   // Base case (leaf node): insert code into given map
-  if(!left() && !right() && !code.empty()) codes[char_] = code;
+  if(!left() && !right() && !code.empty()) codes[ch()] = code;
   // Apply recursively to left and right subtrees
   if(left()) { left()->generate_codes_util(codes, code.push_back(0)); code.pop_back(); }
   if(right()) { right()->generate_codes_util(codes, code.push_back(1)); code.pop_back(); }
@@ -114,8 +115,8 @@ std::basic_string<char_t> huffman_tree<char_t>::decode(bitstream& coded) {
   while(true) {
     huffman_tree<char_t>* node = this;
     while(node->left() && node->right()) node = coded.pop_front() ? node->right() : node->left();
-    decoded += std::basic_string<char_t>(1, node->char_);
-    if(node->char_ == (char_t)0) break;
+    decoded += std::basic_string<char_t>(1, node->ch());
+    if(node->ch() == (char_t)0) break;
   }
   return decoded;
 }
