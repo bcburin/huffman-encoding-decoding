@@ -20,7 +20,7 @@ class binary_tree {
     ~binary_tree();
     std::string str(traversal type = traversal::postorder);
     static binary_tree<T>* from_inorder_postorder(const std::vector<T>& in, const std::vector<T>& post);
-    static binary_tree<T>* from_inorder_postorder_util(
+    static binary_tree<T>* from_inorder_postorder(
       const std::vector<T>& in, const std::vector<T>& post, 
       int in_start, int in_end, int post_start, int post_end
     );
@@ -72,7 +72,35 @@ std::string binary_tree<T>::str(traversal type) {
   return ss.str();
 }
 
+template <typename T>
+binary_tree<T>* binary_tree<T>::from_inorder_postorder(
+      const std::vector<T>& in, const std::vector<T>& post, 
+      int in_start, int in_end, int post_start, int post_end
+    ) {
+  // Base case
+  if(in_start == in_end) return nullptr;
+  // Find current node (last element in range of post vector)
+  binary_tree<T>* curr = new binary_tree<T>(post[post_end-1]);
+  // Find index of current node in range of in vector
+  int index = -1;
+  for(int i = in_start; i != in_end; ++i) {
+    if(in[i] == curr->data_) {
+      index = i;
+      break;
+    }
+  }
+  // Generate left and right subtrees recursively
+  curr->left_ = binary_tree<T>::from_inorder_postorder(in, post, in_start, index, post_start, post_start-in_start+index);
+  curr->right_ = binary_tree<T>::from_inorder_postorder(in, post, index+1, in_end, post_start-in_start+index, post_end-1);
+  // Return generated node
+  return curr;
+}
 
+template <typename T>
+binary_tree<T>* binary_tree<T>::from_inorder_postorder(const std::vector<T>& in, const std::vector<T>& post) {
+  if(in.size() != post.size()) return nullptr;
+  return binary_tree<T>::from_inorder_postorder(in, post, 0, in.size(), 0, post.size());
+}
 
 
 #endif
