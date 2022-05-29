@@ -10,14 +10,24 @@
 using bitstream = bitdequeue<unsigned long>;
 
 template <typename char_t>
-class huffman_tree: public binary_tree<int> {
+struct identified_char {
+  char_t ch;
+  int id;
+  identified_char(char_t ch);
+  private:
+    static int id_;
+};
+
+
+template <typename char_t>
+class huffman_tree: public binary_tree<identified_char<char_t>> {
   private:
     int frequency_;
     char_t char_;
     std::unordered_map<char_t, bitstream> codes_;
     void generate_codes_util(std::unordered_map<char_t, bitstream>& codes, bitstream& code);
-    huffman_tree<char_t>* left() { return static_cast<huffman_tree<char_t>*>(binary_tree<int>::left_); }
-    huffman_tree<char_t>* right() { return static_cast<huffman_tree<char_t>*>(binary_tree<int>::right_); }
+    huffman_tree<char_t>* left() { return static_cast<huffman_tree<char_t>*>(binary_tree<identified_char<char_t>>::left_); }
+    huffman_tree<char_t>* right() { return static_cast<huffman_tree<char_t>*>(binary_tree<identified_char<char_t>>::right_); }
     static int id_;
   public:
     huffman_tree(char_t ch, int frequency = 0);
@@ -29,7 +39,11 @@ class huffman_tree: public binary_tree<int> {
 };
 
 template <typename char_t>
-int huffman_tree<char_t>::id_ = 0;
+int identified_char<char_t>::id_ = 0;
+
+
+template <typename char_t>
+identified_char<char_t>::identified_char(char_t ch): ch(ch), id(id_++) {}
 
 
 template <typename char_t>
@@ -40,7 +54,7 @@ bool huffman_tree<char_t>::greater::operator() (const huffman_tree<char_t>* ch1,
 
 template <typename char_t>
 huffman_tree<char_t>::huffman_tree(char_t ch, int frequency)
-: binary_tree<int>(id_++), char_(ch), frequency_(frequency) {}
+: binary_tree<identified_char<char_t>>(identified_char<char_t>(ch)), char_(ch), frequency_(frequency) {}
 
 
 template <typename char_t>
