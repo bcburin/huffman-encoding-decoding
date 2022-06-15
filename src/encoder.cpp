@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -8,8 +9,8 @@
 int main(int argc, char** argv) {
   // Check user input
   if(argc != 3) {
-    std::cout << "There must be two arguments. Example:" << std::endl
-              << "encoder source.txt destination.bin" << std::endl;
+    std::cout << std::endl << "There must be two arguments. Example:" << std::endl
+              << std::endl << "encoder source.txt destination.bin" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -23,8 +24,16 @@ int main(int argc, char** argv) {
   std::ofstream destination_file(destination_filename, std::ios::out | std::ios::binary);
 
   // Verify that files have been opened
-  if(!source_file.is_open()) throw std::invalid_argument("Could not open file " + source_filename + ".");
-  if(!destination_file.is_open()) throw std::invalid_argument("Could not open file " + destination_filename + ".");
+  if(!source_file.is_open()) {
+    std::cerr << std::endl << "Could not find file " << source_filename << "." << std::endl;
+    destination_file.close();
+    remove(destination_filename.c_str());
+    return EXIT_FAILURE;
+  }
+  if(!destination_file.is_open()) {
+    std::cerr << std::endl << "Could not open nor create file " << destination_filename << "." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   // Get character frequencies from file
   auto frequencies = encoder::get_char_frequencies<char>(source_file);
